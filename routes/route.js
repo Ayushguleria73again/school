@@ -39,7 +39,7 @@ route.get("/", async (req, res) => {
         console.log("error");
         res.status(404).json({
             success: false,
-            message: "internal server error"
+            message: "internal server error",
         })
     }
 }).patch("/:id", async (req, res) => {
