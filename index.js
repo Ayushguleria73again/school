@@ -6,13 +6,15 @@ const env = require("dotenv")
 const app = express()
 const signup = require("./routes/signup")
 const routs = require("./routes/route")
+const path = require("path")
 app.use(cors())
 app.use(express.json())
 app.use("/signup", signup)
 app.use("/api", routs)
 env.config()
-
+app.use("/files",express.static(path.join(__dirname,"files")))
 main().catch(error => console.log(error))
+
 
 async function main() {
     await mongoose.connect(process.env.URL)
