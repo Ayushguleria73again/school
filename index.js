@@ -7,7 +7,9 @@ const app = express()
 const signup = require("./routes/signup")
 const routs = require("./routes/route")
 const path = require("path")
-app.use(cors())
+app.use(cors({
+    origin:"http://localhost:5173"
+}))
 app.use(express.json())
 app.use("/signup", signup)
 app.use("/api", routs)
