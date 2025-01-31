@@ -3,6 +3,19 @@ const schema = require("../schema/schema")
 const nodemailer = require("nodemailer")
 const bcrypt = require('bcryptjs');
 const route = express.Router()
+const multer = require("multer")
+
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'files/');
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + '-' + file.originalname); 
+    }
+  });
+  
+  const upload = multer({ storage: storage });
 
 route.get("/", async (req, res) => {
     try {
@@ -42,7 +55,7 @@ route.get("/", async (req, res) => {
             message: "internal server error",
         })
     }
-}).patch("/:id", async (req, res) => {
+}).patch("/:id",upload.single("files"), async (req, res) => {
     const { id } = req.params;
     let updateData = req.body; 
     if (updateData.password) {
@@ -56,6 +69,9 @@ route.get("/", async (req, res) => {
                 message: "Internal server error during password hashing"
             });
         }
+    }
+    if(req.file){
+        updateData.file=req.file.path
     }
     try {
         const updatedDocument = await schema.findOneAndUpdate(
