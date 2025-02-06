@@ -12,14 +12,16 @@ const storage = multer.diskStorage({
     cb(null, 'files/');
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); 
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 
 const upload = multer({ storage: storage });
 
-signup.post("/", upload.single("files"), async (req, res) => { 
-  
+signup.post("/", upload.single("files"), async (req, res) => {
+
+  // JOI VALIDATE OUR USER DATA
+
   const students = joi.object({
     name: joi.string().required(),
     middle: joi.string().allow(""),
@@ -29,7 +31,7 @@ signup.post("/", upload.single("files"), async (req, res) => {
     email: joi.string().email().required(),
     phone: joi.string().length(10).required(),
     password: joi.string().min(6).max(20).required(),
-  
+
   });
 
 
@@ -51,10 +53,10 @@ signup.post("/", upload.single("files"), async (req, res) => {
       });
     }
 
-  
+
     const hashpassword = await bcrypt.hash(req.body.password, 10);
 
-   
+
     const tokenstore = jwt.sign({ _id: Date.now() }, process.env.KEY, { expiresIn: '1h' });
 
     const newStudent = new schema({
@@ -67,14 +69,10 @@ signup.post("/", upload.single("files"), async (req, res) => {
       phone: req.body.phone,
       password: hashpassword,
       token: tokenstore,
-    
-      files: req.file ? req.file.path : null, 
+
+      files: req.file ? req.file.path : null,
     });
-
-
     const savedStudent = await newStudent.save();
-
- 
     res.status(201).json({
       success: true,
       message: "User saved successfully",
@@ -87,6 +85,7 @@ signup.post("/", upload.single("files"), async (req, res) => {
       message: err.message || "An error occurred"
     });
   }
-});
+})
+
 
 module.exports = signup;

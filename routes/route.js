@@ -4,7 +4,14 @@ const nodemailer = require("nodemailer")
 const bcrypt = require('bcryptjs');
 const route = express.Router()
 const multer = require("multer")
+const twilio = require('twilio');
+const port = process.env.PORT
 
+const accountSid = process.env.TWILIO_ACCOUNT_SID; 
+const authToken = process.env.TWILIO_AUTH_TOKEN;   
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER; 
+
+const client = new twilio(accountSid, authToken);
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -93,7 +100,6 @@ route.get("/", async (req, res) => {
 });
 route.post("/email",(req,res)=>{
     const {email,name,message,subject} = req.body;
-
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
@@ -139,5 +145,38 @@ route.post("/login", async(req,res)=>{
         })
     }
 })
+route.post('/send-sms', async (req, res) => {
+    const { to, message } = req.body;  // Destructure `to` and `message` from the request body
+
+    // Validate that both `to` and `message` are provided
+    if (!to || !message) {
+        return res.status(400).json({
+            success: false,
+            error: 'Phone number and message are required'
+        });
+    }
+
+    try {
+        const messageResponse = await client.messages.create({
+            body: message,  // The message content
+            to: to,         // Dynamic phone number from request body
+            from: twilioPhoneNumber,  // Twilio phone number (make sure this is set properly)
+        });
+
+        res.json({
+            success: true,
+            messageSid: messageResponse.sid,
+            body: messageResponse.body,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+        });
+    }
+});
+
+
 
 module.exports = route

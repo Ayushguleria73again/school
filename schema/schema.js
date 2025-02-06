@@ -6,10 +6,6 @@ const schema = mongoose.Schema({
         type:String,
         required:true
     },
-    middle:{
-        type:String,
-        required:false
-    },
     last:{
         type:String,
         required:true
